@@ -149,73 +149,52 @@ def show_mark_attendance_page():
     """Display mark attendance page with camera"""
     st.header("✅ Mark Attendance")
     
-    st.info("📸 Position your face in front of the camera. Attendance will be marked automatically when you're recognized.")
+    st.info("📸 Position your face in front of the camera and click 'Take Photo'.")
     
-    # Camera controls
-    col1, col2 = st.columns([1, 4])
+    # Camera input
+    img_file_buffer = st.camera_input("Take a photo to mark attendance", key="attendance_camera")
     
-    with col1:
-        if st.button("🎥 Start Camera", use_container_width=True):
-            st.session_state.camera_active = True
-        
-        if st.button("⏹️ Stop Camera", use_container_width=True):
-            st.session_state.camera_active = False
-    
-    # Camera feed
-    camera_placeholder = st.empty()
     status_placeholder = st.empty()
     
-    if st.session_state.camera_active:
-        # Open camera
-        cap = cv2.VideoCapture(0)
+    if img_file_buffer is not None:
+        # Convert the file buffer to an opencv image
+        bytes_data = img_file_buffer.getvalue()
+        cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
         
-        if not cap.isOpened():
-            st.error("❌ Could not access camera. Please check your camera connection.")
-            st.session_state.camera_active = False
-        else:
-            frame_count = 0
-            
-            while st.session_state.camera_active:
-                ret, frame = cap.read()
+        # Recognize faces
+        face_results = st.session_state.face_system.recognize_faces(cv2_img)
+        
+        # Draw faces on frame (optional, for display)
+        frame_with_faces = st.session_state.face_system.draw_faces(cv2_img.copy(), face_results)
+        
+        # Display the processed image
+        st.image(frame_with_faces, channels="BGR", caption="Processed Image", use_container_width=True)
+        
+        # Check for recognized faces and mark attendance
+        marked_any = False
+        for result in face_results:
+            if result['name'] != "Unknown" and result['confidence'] > 0.5:
+                # Try to mark attendance
+                attendance_result = st.session_state.attendance_manager.mark_attendance(
+                    result['name']
+                )
                 
-                if not ret:
-                    st.error("❌ Failed to capture frame from camera.")
-                    break
-                
-                # Process every 5th frame for performance
-                if frame_count % 5 == 0:
-                    # Recognize faces
-                    face_results = st.session_state.face_system.recognize_faces(frame)
-                    
-                    # Draw faces on frame
-                    frame = st.session_state.face_system.draw_faces(frame, face_results)
-                    
-                    # Check for recognized faces and mark attendance
-                    for result in face_results:
-                        if result['name'] != "Unknown" and result['confidence'] > 0.5:
-                            # Try to mark attendance
-                            attendance_result = st.session_state.attendance_manager.mark_attendance(
-                                result['name']
-                            )
-                            
-                            if attendance_result['success']:
-                                status_placeholder.success(
-                                    f"✅ Attendance marked for **{result['name']}** at {attendance_result['time']}"
-                                )
-                            else:
-                                status_placeholder.info(
-                                    f"ℹ️ {result['name']}: {attendance_result['message']}"
-                                )
-                
-                # Display frame
-                frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                camera_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
-                
-                frame_count += 1
-            
-            cap.release()
-    else:
-        camera_placeholder.info("📷 Click 'Start Camera' to begin marking attendance.")
+                if attendance_result['success']:
+                    st.success(
+                        f"✅ Attendance marked for **{result['name']}** at {attendance_result['time']}"
+                    )
+                    marked_any = True
+                else:
+                    st.info(
+                        f"ℹ️ {result['name']}: {attendance_result['message']}"
+                    )
+                    marked_any = True
+        
+        if not marked_any:
+            if not face_results:
+                st.warning("❌ No face detected. Please try again.")
+            else:
+                st.warning("❌ Face not recognized. Please register first or try again.")
 
 
 def show_view_attendance_page():
@@ -281,69 +260,39 @@ def show_register_face_page():
     
     if person_name:
         st.markdown("---")
-        st.subheader(f"📸 Capture Photos for {person_name}")
-        
-        # Camera controls
-        col1, col2, col3 = st.columns([1, 1, 3])
-        
-        with col1:
-            start_camera = st.button("🎥 Start Camera", use_container_width=True)
-        
-        with col2:
-            capture_photo = st.button("📸 Capture", use_container_width=True)
+        st.subheader(f"📸 Capture Photo for {person_name}")
         
         # Initialize session state for registration
-        if 'reg_camera_active' not in st.session_state:
-            st.session_state.reg_camera_active = False
         if 'reg_captured_count' not in st.session_state:
             st.session_state.reg_captured_count = 0
-        
-        if start_camera:
-            st.session_state.reg_camera_active = True
-        
-        camera_placeholder = st.empty()
-        status_placeholder = st.empty()
-        
-        if st.session_state.reg_camera_active:
-            cap = cv2.VideoCapture(0)
             
-            if not cap.isOpened():
-                st.error("❌ Could not access camera.")
-                st.session_state.reg_camera_active = False
+        # Camera input
+        img_file_buffer = st.camera_input("Take a photo to register", key="register_camera")
+        
+        if img_file_buffer is not None:
+            # Convert the file buffer to an opencv image
+            bytes_data = img_file_buffer.getvalue()
+            cv2_img = cv2.imdecode(np.frombuffer(bytes_data, np.uint8), cv2.IMREAD_COLOR)
+            
+            # Save face
+            success = st.session_state.face_system.save_face_from_frame(
+                person_name, 
+                cv2_img
+            )
+            
+            if success:
+                st.success(f"✅ Photo captured successfully for {person_name}!")
+                st.balloons()
+                # Optional: Clear the name or reset state if needed, 
+                # but for now we just show success.
+                # To allow multiple photos, we'd need a more complex flow with st.camera_input 
+                # (since it retains the last image), but for basic registration one good photo is often enough 
+                # or the user can retake.
+                
+                # If we want to force a "reset" of the camera input, it's tricky in Streamlit without rerunning.
+                # But the user can just take another photo.
             else:
-                ret, frame = cap.read()
-                
-                if ret:
-                    # Display frame
-                    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                    camera_placeholder.image(frame_rgb, channels="RGB", use_container_width=True)
-                    
-                    # Capture photo
-                    if capture_photo:
-                        success = st.session_state.face_system.save_face_from_frame(
-                            person_name, 
-                            frame
-                        )
-                        
-                        if success:
-                            st.session_state.reg_captured_count += 1
-                            status_placeholder.success(
-                                f"✅ Photo {st.session_state.reg_captured_count} captured successfully!"
-                            )
-                        else:
-                            status_placeholder.error("❌ No face detected in the frame. Please try again.")
-                
-                cap.release()
-        
-        # Show captured count
-        if st.session_state.reg_captured_count > 0:
-            st.info(f"📷 {st.session_state.reg_captured_count} photo(s) captured. Recommended: 3-5 photos from different angles.")
-            
-            if st.button("✅ Finish Registration"):
-                st.success(f"🎉 Successfully registered {person_name} with {st.session_state.reg_captured_count} photos!")
-                st.session_state.reg_captured_count = 0
-                st.session_state.reg_camera_active = False
-                st.rerun()
+                st.error("❌ No face detected in the frame. Please try again.")
 
 
 def show_settings_page():
