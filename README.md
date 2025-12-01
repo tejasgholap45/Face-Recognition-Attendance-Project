@@ -1,7 +1,9 @@
 # Face Recognition Attendance System
 
-<<<<<<< HEAD
 A fully functional face recognition-based attendance system built with Streamlit that automatically records daily attendance in Excel sheets.
+
+**Live demo:** [**Try it here**](https://face-attendance-model.streamlit.app/)
+
 
 ## Features
 
