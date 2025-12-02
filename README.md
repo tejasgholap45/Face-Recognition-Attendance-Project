@@ -144,15 +144,6 @@ Face Reco/
 4. **Direct Gaze**: Look directly at the camera
 5. **No Obstructions**: Avoid sunglasses, masks, or other face coverings
 
-## License
-
-This project is open-source and available for educational and commercial use.
-
-## Support
-
-For issues or questions, please check the troubleshooting section or review the code comments.
-=======
-A simple and fast **Face Recognition–Based Attendance System** built with **Streamlit**. It detects faces through webcam and automatically records attendance in Excel files.
 
 ## ⭐ Features
 
@@ -199,6 +190,3 @@ Attendance_YYYY-MM-DD.xlsx
 * Use clear, well-lit face photos
 * Register 3–5 images for best accuracy
 
-
-If you want an **even shorter** README or want me to **auto-generate it as a file**, just tell me!
->>>>>>> 96f8f70fff13cf3679cf80f0ade375edbfebfd69
