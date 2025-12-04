@@ -57,11 +57,12 @@ def main():
     st.markdown(f'<div class="main-header">👤 Face Recognition Attendance System</div>', unsafe_allow_html=True)
 
     # Sidebar
-    st.sidebar.markdown(f"<div class='sidebar-header'>👨‍💻 Developer Info</div>", unsafe_allow_html=True)
-    st.sidebar.text(f"Name: {Tejas Gholap}")
-    st.sidebar.text(f"Role: {Data Analyst}")
-    st.sidebar.text(f"Linkdin: {https://www.linkedin.com/in/tejas-gholap-bb3417300/}")
-    st.sidebar.markdown(f"[GitHub Repo]({https://github.com/tejasgholap45/Face-Recognition-Attendance-Project})")
+    st.sidebar.markdown("<div class='sidebar-header'>👨‍💻 Developer Info</div>", unsafe_allow_html=True)
+    st.sidebar.text("Name: Tejas Gholap")
+    st.sidebar.text("Role: Data Analyst")
+    st.sidebar.text("LinkedIn: https://www.linkedin.com/in/tejas-gholap-bb3417300/")
+    st.sidebar.markdown("[GitHub Repo](https://github.com/tejasgholap45/Face-Recognition-Attendance-Project)")
+
 
     st.sidebar.markdown("---")
     st.sidebar.title("Navigation")
