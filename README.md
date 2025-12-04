@@ -190,3 +190,6 @@ Attendance_YYYY-MM-DD.xlsx
 * Use clear, well-lit face photos
 * Register 3–5 images for best accuracy
 
+
+# Face-Recognition-Attendance-System
+3449347e320704c5cf96535ea2aeefcbdd0a671b
