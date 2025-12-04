@@ -47,7 +47,7 @@ if 'face_system' not in st.session_state:
 # -----------------------------
 DEVELOPER_NAME = "Tejas Gholap"
 DEVELOPER_ROLE = "Data analyst"
-Linkdin = "https://www.linkedin.com/in/tejas-gholap-bb3417300/"
+LINKDIN_URL = "https://www.linkedin.com/in/tejas-gholap-bb3417300/"
 GITHUB_URL = "https://github.com/tejasgholap45/Face-Recognition-Attendance-Project"
 
 # -----------------------------
